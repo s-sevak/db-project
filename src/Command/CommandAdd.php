@@ -1,6 +1,6 @@
 <?php
 
-require_once 'src/Command/CommandInterface.php';
+require_once __DIR__ . "/CommandInterface.php";
 
 class CommandAdd implements CommandInterface
 {
