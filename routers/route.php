@@ -1,30 +1,53 @@
 <?php
 
-require_once __DIR__ . '/../src/UserManager.php';
+require_once __DIR__ . '/../config/EnvLoader.php';
+require_once __DIR__ . '/../config/Database.php';
+require_once __DIR__ . '/../src/User/UserRepositoryMysql.php';
+require_once __DIR__ . '/../src/User/UserRepositoryJson.php';
+require_once __DIR__ . '/../src/User/UserManager.php';
+require_once __DIR__ . '/../src/Output/OutputHandler.php';
+require_once __DIR__ . '/../src/Command/CommandList.php';
+require_once __DIR__ . '/../src/Command/CommandAdd.php';
+require_once __DIR__ . '/../src/Command/CommandDelete.php';
+
+$envArr = (new EnvLoader())->loadEnv();
+
+if ($envArr['DB_SOURCE'] === 'mysql') {
+
+    $dbConnection = (new Database())->getConnection();
+    $userRepository = new UserRepositoryMysql($dbConnection);
+} else {
+
+    $userRepository = new UserRepositoryJson();
+}
+
+
+$userManager = new UserManager($userRepository);
+$outputHandler = new OutputHandler();
 
 $command = $argv[1] ?? null;
-$userManager = new UserManager('users.json');
 
 switch ($command) {
     case 'list':
-        $users = $userManager->getUsers();
-        foreach ($users as $user) {
-            echo "ID: {$user->id}  ||| Имя: {$user->firstName} ||| Фамилия: {$user->lastName} ||| Email: {$user->email}" . PHP_EOL;
-        }
+        $commandHandler = new CommandList($userManager, $outputHandler);
+        $commandHandler->execute();
         break;
 
     case 'add':
-        $userManager->addUser();
-        echo 'Пользователь добавлен';
+        $commandHandler = new CommandAdd($userManager, $outputHandler);
+        $commandHandler->execute();
         break;
 
     case 'delete':
         $userId = $argv[2] ?? null;
         if ($userId) {
-            $userManager->deleteUser($userId);
-            echo "Пользователь номер $userId удалён!" . PHP_EOL;
+            $commandHandler = new CommandDelete($userManager, $outputHandler);
+            $commandHandler->execute($userId);
         } else {
-            echo "Укажите ID пользователя для удаления" . PHP_EOL;
+            $outputHandler->output("Укажите ID пользователя для удаления");
         }
         break;
+
+    default:
+        $outputHandler->output('Неизвестная команда');
 }

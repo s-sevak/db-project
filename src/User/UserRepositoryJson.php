@@ -1,14 +1,17 @@
 <?php
 
-require_once __DIR__ . '/../src/User.php';
+require_once __DIR__ . '/UserRepositoryInterface.php';
+require_once __DIR__ . '/User.php';
+require_once __DIR__ . '/../../config/EnvLoader.php';
 
-class UserManager
+class UserRepositoryJson implements UserRepositoryInterface
 {
-    private $file;
+    private string $file;
 
-    public function __construct($filePath)
+    public function __construct()
     {
-        $this->file = $filePath;
+
+        $this->file = __DIR__ . '/../../routersusers.json';
     }
 
     public function getUsers(): array
@@ -21,14 +24,13 @@ class UserManager
         $userArray = json_decode($jsonData, true);
 
         $users = [];
-        print_r($userArray);
         foreach ($userArray as $userData) {
             $users[] = new User($userData['id'], $userData['firstName'], $userData['lastName'], $userData['email']);
         }
         return $users;
     }
 
-    public function saveUsers($users): void
+    public function saveUsers(array $users): void
     {
         $userArray = [];
         foreach ($users as $user) {
@@ -60,7 +62,7 @@ class UserManager
         $this->saveUsers($users);
     }
 
-    public function deleteUser($id): void
+    public function deleteUser(int $id): void
     {
         $users = $this->getUsers();
         $updatedUsers = array_filter($users, function ($user) use ($id) {
