@@ -1,6 +1,6 @@
 <?php
 
-require_once __DIR__ . "/CommandInterface.php";
+require_once __DIR__ . '/CommandInterface.php';
 
 class CommandDelete implements CommandInterface
 {

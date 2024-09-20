@@ -21,12 +21,12 @@ class UserRepositoryMysql implements UserRepositoryInterface
 
     public function saveUsers(array $users): void
     {
-        $stmt = $this->dbConnection->prepare("INSERT INTO users (firstName, lastName, email) VALUES (:firstName, :lastName, :email)");
+        $stmt = $this->dbConnection->prepare("INSERT INTO users (first_name, last_name, email) VALUES (:firstName, :lastName, :email)");
         foreach ($users as $user) {
             $stmt->execute([
-                ':firstName' => $user->firstName,
-                ':lastName' => $user->lastName,
-                ':email' => $user->email,
+                ':firstName' => $user['firstName'],
+                ':lastName' => $user['lastName'],
+                ':email' => $user['email'],
             ]);
         }
     }
