@@ -32,4 +32,3 @@ class UserManager
         $this->userRepository->deleteUser($id);
     }
 }
-

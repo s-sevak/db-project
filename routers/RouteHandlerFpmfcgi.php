@@ -2,15 +2,25 @@
 
 require_once __DIR__ . '/../src/User/UserRepositoryMysql.php';
 require_once __DIR__ . '/../config/Database.php';
+require_once __DIR__ . '/../config/EnvLoader.php';
 
 class RouteHandlerFpmfcgi
 {
     private $userManager;
+    private $outputHandler;
 
     public function __construct()
     {
-        $pdo = (new Database())->getConnection();
-        $this->userManager = new UserRepositoryMysql($pdo);
+        $envArr = (new EnvLoader())->loadEnv();
+
+        if ($envArr['DB_SOURCE'] === 'mysql') {
+            $pdo = (new Database())->getConnection();
+            $this->userManager = new UserRepositoryMysql($pdo);
+        } else {
+        $userRepository = new UserRepositoryJson();
+    }
+        $this->userManager = new UserManager($userRepository);
+        $this->outputHandler = new OutputHandler();
     }
 
     public function handleRequest()
