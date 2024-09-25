@@ -1,7 +1,7 @@
 <?php
 
 require_once __DIR__ . '/UserRepositoryInterface.php';
-require_once __DIR__ . '/../../config/Database.php';
+require_once __DIR__ . '/../../src/Database/Database.php';
 require_once __DIR__ . '/../../config/EnvLoader.php';
 
 class UserRepositoryMysql implements UserRepositoryInterface
@@ -16,7 +16,13 @@ class UserRepositoryMysql implements UserRepositoryInterface
     public function getUsers(): array
     {
         $stmt = $this->dbConnection->query("SELECT * FROM users");
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        $userDataArray = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        $users = [];
+        foreach ($userDataArray as $userData) {
+            $users[] = UserDTO::create($userData['id'], $userData['first_name'], $userData['last_name'], $userData['email']);
+        }
+        return $users;
     }
 
     public function saveUsers(array $users): void
@@ -24,17 +30,18 @@ class UserRepositoryMysql implements UserRepositoryInterface
         $stmt = $this->dbConnection->prepare("INSERT INTO users (first_name, last_name, email) VALUES (:firstName, :lastName, :email)");
         foreach ($users as $user) {
             $stmt->execute([
-                ':firstName' => $user['firstName'],
-                ':lastName' => $user['lastName'],
-                ':email' => $user['email'],
+                ':firstName' => $user->getFirstName(),
+                ':lastName' => $user->getLastName(),
+                ':email' => $user->getEmail(),
             ]);
         }
     }
 
+
     public function addUser(): void
     {
-        $firstName = 'Имя_'.rand(1000, 9999);
-        $lastName = 'Фамилия_'.rand(1000, 9999);
+        $firstName = 'Имя_' . rand(1000, 9999);
+        $lastName = 'Фамилия_' . rand(1000, 9999);
         $email = strtolower($firstName) . '@example.com';
 
         $stmt = $this->dbConnection->prepare("INSERT INTO users (first_name, last_name, email) VALUES (:firstName, :lastName, :email)");

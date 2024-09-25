@@ -1,13 +1,14 @@
 <?php
-require_once __DIR__ . '/../config/EnvLoader.php';
+require_once __DIR__ . '/../../config/EnvLoader.php';
+require_once __DIR__ . '/DatabaseInterface.php';
 
-class Database
+class Database implements DatabaseInterface
 {
     private PDO $pdo;
 
     public function __construct()
     {
-        $dbSet = (new EnvLoader())->loadEnv();
+        $dbSet = EnvLoader::createAndLoadEnv();
 
         $host = $dbSet['DB_HOST'];
         $dbname = $dbSet['DB_NAME'];

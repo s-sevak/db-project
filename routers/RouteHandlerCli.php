@@ -1,26 +1,16 @@
 <?php
 
-class RouteHandlerCli
+require_once __DIR__ . '/RouteHandler.php';
+
+class RouteHandlerCli extends RouteHandler
 {
-    private $userManager;
-    private $outputHandler;
 
     public function __construct()
     {
-        $envArr = (new EnvLoader())->loadEnv();
-
-        if ($envArr['DB_SOURCE'] === 'mysql') {
-            $dbConnection = (new Database())->getConnection();
-            $userRepository = new UserRepositoryMysql($dbConnection);
-        } else {
-            $userRepository = new UserRepositoryJson();
-        }
-
-        $this->userManager = new UserManager($userRepository);
-        $this->outputHandler = new OutputHandler();
+        $this->initializeUserManager();
     }
 
-    public function handle($command, $userId = null)
+    public function handle($command, $userId = null): void
     {
         switch ($command) {
             case 'list':

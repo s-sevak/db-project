@@ -19,22 +19,12 @@ class CommandList implements CommandInterface
         $users = $this->userManager->getUsers();
 
         foreach ($users as $user) {
-            if (is_object($user)) {
-                $id = $user->id;
-                $firstName = $user->firstName;
-                $lastName = $user->lastName;
-                $email = $user->email;
-            } elseif (is_array($user)) {
-                $id = $user['id'];
-                $firstName = $user['first_name'];
-                $lastName = $user['last_name'];
-                $email = $user['email'];
-            } else {
-                continue;
-            }
+            $id = $user->getId();
+            $firstName = $user->getFirstName();
+            $lastName = $user->getLastName();
+            $email = $user->getEmail();
 
             $this->outputHandler->output("ID: {$id} ||| Имя: {$firstName} ||| Фамилия: {$lastName} ||| Email: {$email}");
         }
     }
-
 }

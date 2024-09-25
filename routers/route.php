@@ -1,7 +1,7 @@
 <?php
 
 require_once __DIR__ . '/../config/EnvLoader.php';
-require_once __DIR__ . '/../config/Database.php';
+require_once __DIR__ . '/../src/Database/Database.php';
 require_once __DIR__ . '/../src/User/UserRepositoryMysql.php';
 require_once __DIR__ . '/../src/User/UserRepositoryJson.php';
 require_once __DIR__ . '/../src/User/UserManager.php';
@@ -16,9 +16,7 @@ require_once __DIR__ . '/RouteHandlerFpmfcgi.php';
 switch (PHP_SAPI) {
     case 'cli':
         $routeHandler = new RouteHandlerCli();
-        $command = $argv[1] ?? null;
-        $userId = $argv[2] ?? null;
-        $routeHandler->handle($command, $userId);
+        $routeHandler->handle($argv[1] ?? null, $argv[2] ?? null);
         break;
 
     case 'fpm-fcgi':

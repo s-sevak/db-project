@@ -1,29 +1,18 @@
 <?php
 
 require_once __DIR__ . '/../src/User/UserRepositoryMysql.php';
-require_once __DIR__ . '/../config/Database.php';
+require_once __DIR__ . '/../src/Database/Database.php';
 require_once __DIR__ . '/../config/EnvLoader.php';
+require_once __DIR__ . '/RouteHandler.php';
 
-class RouteHandlerFpmfcgi
+class RouteHandlerFpmfcgi extends RouteHandler
 {
-    private $userManager;
-    private $outputHandler;
-
     public function __construct()
     {
-        $envArr = (new EnvLoader())->loadEnv();
-
-        if ($envArr['DB_SOURCE'] === 'mysql') {
-            $pdo = (new Database())->getConnection();
-            $this->userManager = new UserRepositoryMysql($pdo);
-        } else {
-        $userRepository = new UserRepositoryJson();
-    }
-        $this->userManager = new UserManager($userRepository);
-        $this->outputHandler = new OutputHandler();
+        $this->initializeUserManager();
     }
 
-    public function handleRequest()
+    public function handleRequest(): void
     {
         $requestMethod = $_SERVER['REQUEST_METHOD'];
         $requestUri = $_SERVER['REQUEST_URI'];
@@ -60,13 +49,18 @@ class RouteHandlerFpmfcgi
         }
     }
 
-    private function listUsers()
+    private function listUsers(): void
     {
         header('Content-Type: application/json');
-        echo json_encode($this->userManager->getUsers(), JSON_UNESCAPED_UNICODE);
+
+        $users = array_map(function ($user) {
+            return $user->toArray();
+        }, $this->userManager->getUsers());
+
+        echo json_encode($users, JSON_UNESCAPED_UNICODE);
     }
 
-    private function createUser()
+    private function createUser(): void
     {
         $inputData = json_decode(file_get_contents('php://input'), true);
 
@@ -76,18 +70,19 @@ class RouteHandlerFpmfcgi
             return;
         }
 
-        $user = [
-            'firstName' => $inputData['firstName'],
-            'lastName' => $inputData['lastName'],
-            'email' => $inputData['email']
-        ];
+        $users = $this->userManager->getUsers();
+        $lastUser = count($users) > 0 ? end($users) : null;
+        $lastId = $lastUser ? $lastUser->getId() : 0;
+        $newId = $lastId + 1;
+
+        $user = UserDTO::create($newId, $inputData['firstName'], $inputData['lastName'], $inputData['email']);
 
         $this->userManager->saveUsers([$user]);
         http_response_code(201);
         echo json_encode(['message' => 'Пользователь создан'], JSON_UNESCAPED_UNICODE);
     }
 
-    private function deleteUser(int $id)
+    private function deleteUser(int $id): void
     {
         $this->userManager->deleteUser($id);
         http_response_code(200);

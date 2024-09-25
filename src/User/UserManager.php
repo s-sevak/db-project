@@ -14,7 +14,8 @@ class UserManager
 
     public function getUsers(): array
     {
-        return $this->userRepository->getUsers();
+        return $users = $this->userRepository->getUsers();
+
     }
 
     public function saveUsers(array $users): void

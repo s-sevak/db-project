@@ -3,6 +3,7 @@
 
 class EnvLoader
 {
+    private static ?array $dbConnectData = null;
     private string $filePath;
 
     public function __construct(string $filePath = null)
@@ -12,21 +13,22 @@ class EnvLoader
 
     public function loadEnv(): array
     {
+        $instance = new self();
         $dbConnectData = [];
 
-        if (!file_exists($this->filePath)) {
+        if (!file_exists($instance->filePath)) {
             print_r(".env файл не найден");
             die;
         }
 
-        $lines = file($this->filePath, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+        $lines = file($instance->filePath, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
 
         foreach ($lines as $line) {
             if (str_starts_with(trim($line), '#')) {
                 continue;
             }
 
-            list($key, $value) = explode('=', $line, 2);
+            [$key, $value] = explode('=', $line, 2);
 
             $key = trim($key);
             $value = trim($value);
@@ -39,4 +41,9 @@ class EnvLoader
         return $dbConnectData;
     }
 
+    public static function createAndLoadEnv(): array
+    {
+        $instance = new self();
+        return $instance->loadEnv();
+    }
 }
